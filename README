@@ -1,0 +1,34 @@
+# Collaborative Canvas (Firebase Realtime Database)
+
+This is a static web app that lets multiple users draw on a shared canvas in real time using Firebase Realtime Database.
+
+Features
+- Smooth brush drawing synchronized across clients
+- Color picker and brush size control
+- Eraser mode (destination-out)
+- Admin-only “Clear All” button (prompts for admin key on load)
+
+Project layout
+- index.html: App entry point for GitHub Pages
+- collab.js: App logic (includes your Firebase initialization exactly as provided)
+- collab.html: Alternate entry with the same UI (optional)
+- style.css / script.js: Original scaffold (unused by the new entry point)
+
+Run locally
+- Open index.html directly in your browser. No build step is required.
+
+Deploy to GitHub Pages
+1) Commit and push to GitHub:
+   - Initialize git if needed and push this folder to a GitHub repository.
+2) Enable Pages:
+   - In your GitHub repo: Settings → Pages → Build and deployment
+   - Source: Deploy from a branch
+   - Branch: main, Folder: /(root)
+3) Visit the GitHub Pages URL shown in the Pages settings. It will serve index.html by default.
+
+Admin key
+- On page load you’ll be prompted for an admin key. Enter "cooper" to reveal the Clear All button.
+- Clicking Clear All removes the `lines` node in the database for everyone.
+
+Firebase notes
+- The Firebase web config embedded here is client-side and not a secret. Ensure your Realtime Database rules are configured appropriately (e.g., authenticated only, rate-limited, and write-protected as needed).
