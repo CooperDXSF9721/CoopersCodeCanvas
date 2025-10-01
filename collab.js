@@ -234,6 +234,34 @@ const clearBtn = document.getElementById('clearBtn');
 const freeTextInput = document.getElementById('freeTextInput');
 const addTextBtn = document.getElementById('addTextBtn');
 
+// Ensure a text size picker exists (for text objects)
+let textSizePicker = document.getElementById('textSizePicker');
+if (!textSizePicker) {
+  const toolbarEl = document.getElementById('toolbar') || document.body;
+  textSizePicker = document.createElement('input');
+  textSizePicker.type = 'number';
+  textSizePicker.id = 'textSizePicker';
+  textSizePicker.min = '10';
+  textSizePicker.max = '200';
+  textSizePicker.value = '40';
+  textSizePicker.title = 'Text size (px)';
+  textSizePicker.style.width = '70px';
+  // Insert before Add Text button when possible
+  if (toolbarEl && addTextBtn && addTextBtn.parentElement === toolbarEl) {
+    toolbarEl.insertBefore(textSizePicker, addTextBtn);
+  } else if (toolbarEl) {
+    toolbarEl.appendChild(textSizePicker);
+  } else {
+    document.body.appendChild(textSizePicker);
+  }
+}
+
+const getTextSize = () => {
+  const n = parseInt(textSizePicker.value, 10);
+  if (Number.isNaN(n)) return 40;
+  return Math.max(10, Math.min(200, n));
+};
+
 colorPicker.addEventListener('change', e => {
   brushColor = e.target.value;
   eraserActive = false;
@@ -254,7 +282,7 @@ eraserBtn.addEventListener('click', () => {
 addTextBtn.addEventListener('click', () => {
   const content = (freeTextInput.value || '').trim();
   if (!content) return;
-  const size = 40; // default text size
+  const size = getTextSize();
   const x = current.x || canvas.width / 2;
   const y = current.y || canvas.height / 2;
   textsRef.push({ x, y, text: content, size, color: brushColor });
