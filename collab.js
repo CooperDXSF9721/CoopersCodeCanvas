@@ -147,7 +147,7 @@ function drawMove(x, y) {
   }
   if (!drawing) return;
   const points = drawLineSmooth(current.x, current.y, x, y, brushColor, brushSize, eraserActive);
-  // If erasing, remove hit text objects
+  // If erasing, check contact with text and remove any hit text objects
   if (eraserActive && points && points.length) {
     const removed = new Set();
     points.forEach(p => {
@@ -226,79 +226,14 @@ textsRef.on('child_removed', snapshot => {
   drawAll();
 });
 
-// ==================== UI: Ensure toolbar and text inputs exist ====================
-function ensureUI() {
-  let toolbar = document.getElementById('toolbar');
-  if (!toolbar) {
-    toolbar = document.createElement('div');
-    toolbar.id = 'toolbar';
-    toolbar.style.position = 'fixed';
-    toolbar.style.bottom = '10px';
-    toolbar.style.left = '10px';
-    toolbar.style.right = '10px';
-    toolbar.style.zIndex = '1000';
-    toolbar.style.display = 'flex';
-    toolbar.style.gap = '10px';
-    toolbar.style.alignItems = 'center';
-    toolbar.style.padding = '8px';
-    toolbar.style.background = 'rgba(255,255,255,0.9)';
-    toolbar.style.border = '1px solid #ddd';
-    toolbar.style.borderRadius = '8px';
-    document.body.appendChild(toolbar);
-  }
+// ==================== UI Controls ====================
+const colorPicker = document.getElementById('colorPicker');
+const sizePicker = document.getElementById('sizePicker');
+const eraserBtn = document.getElementById('eraserBtn');
+const clearBtn = document.getElementById('clearBtn');
+const freeTextInput = document.getElementById('freeTextInput');
+const addTextBtn = document.getElementById('addTextBtn');
 
-  function ensureChild(tag, id, setup) {
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement(tag);
-      el.id = id;
-      setup && setup(el);
-      toolbar.appendChild(el);
-    }
-    return el;
-  }
-
-  const colorPicker = ensureChild('input', 'colorPicker', el => {
-    el.type = 'color';
-    el.value = '#000000';
-  });
-
-  const sizePicker = ensureChild('input', 'sizePicker', el => {
-    el.type = 'number';
-    el.min = '1';
-    el.max = '50';
-    el.value = '4';
-    el.style.width = '70px';
-  });
-
-  const freeTextInput = ensureChild('input', 'freeTextInput', el => {
-    el.type = 'text';
-    el.placeholder = 'Type text…';
-    el.style.minWidth = '160px';
-  });
-
-  const addTextBtn = ensureChild('button', 'addTextBtn', el => {
-    el.type = 'button';
-    el.textContent = 'Add Text';
-  });
-
-  const eraserBtn = ensureChild('button', 'eraserBtn', el => {
-    el.type = 'button';
-    el.textContent = 'Eraser';
-  });
-
-  const clearBtn = ensureChild('button', 'clearBtn', el => {
-    el.type = 'button';
-    el.textContent = 'Clear All (Admin)';
-    el.style.display = 'none';
-  });
-
-  return { colorPicker, sizePicker, eraserBtn, clearBtn, freeTextInput, addTextBtn };
-}
-
-const { colorPicker, sizePicker, eraserBtn, clearBtn, freeTextInput, addTextBtn } = ensureUI();
-
-// Wire up controls
 colorPicker.addEventListener('change', e => {
   brushColor = e.target.value;
   eraserActive = false;
@@ -316,19 +251,14 @@ eraserBtn.addEventListener('click', () => {
 });
 
 // Add Text
-function addText() {
+addTextBtn.addEventListener('click', () => {
   const content = (freeTextInput.value || '').trim();
   if (!content) return;
-  const size = 40; // default text size for added text
+  const size = 40; // default text size
   const x = current.x || canvas.width / 2;
   const y = current.y || canvas.height / 2;
   textsRef.push({ x, y, text: content, size, color: brushColor });
   freeTextInput.value = '';
-  freeTextInput.focus();
-}
-addTextBtn.addEventListener('click', addText);
-freeTextInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') addText();
 });
 
 // ==================== Admin ====================
@@ -337,8 +267,16 @@ freeTextInput.addEventListener('keydown', e => {
   const isAdmin = prompt("Enter admin key to see admin tools:") === adminKey;
   if (isAdmin) {
     clearBtn.style.display = 'inline-block';
-    clearBtn.addEventListener('click', () => {
-      db.ref('lines').remove();
+    clearBtn.addEventListener('click', async () => {
+      try {
+        await Promise.all([
+          db.ref('lines').remove(),
+          db.ref('texts').remove()
+        ]);
+        // Listeners will clear caches and redraw. If rules block removes, this may no-op.
+      } catch (err) {
+        console.error('Failed to clear canvas data:', err);
+      }
     });
   }
 })();
