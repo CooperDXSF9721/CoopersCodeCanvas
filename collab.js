@@ -229,6 +229,10 @@ textsRef.on('child_removed', snapshot => {
 // ==================== UI Controls ====================
 const colorPicker = document.getElementById('colorPicker');
 const sizePicker = document.getElementById('sizePicker');
+// Allow brush size up to 200px (was 50); this updates the UI constraint
+if (sizePicker) {
+  sizePicker.max = '200';
+}
 const eraserBtn = document.getElementById('eraserBtn');
 const clearBtn = document.getElementById('clearBtn');
 const freeTextInput = document.getElementById('freeTextInput');
@@ -270,7 +274,7 @@ colorPicker.addEventListener('change', e => {
 
 sizePicker.addEventListener('change', e => {
   const val = parseInt(e.target.value, 10);
-  if (!Number.isNaN(val)) brushSize = Math.max(1, Math.min(50, val));
+  if (!Number.isNaN(val)) brushSize = Math.max(1, Math.min(200, val));
 });
 
 eraserBtn.addEventListener('click', () => {
