@@ -231,7 +231,7 @@ const colorPicker = document.getElementById('colorPicker');
 const sizePicker = document.getElementById('sizePicker');
 // Allow brush size up to 200px (was 50); this updates the UI constraint
 if (sizePicker) {
-  sizePicker.max = '200';
+  sizePicker.max = '400';
 }
 const eraserBtn = document.getElementById('eraserBtn');
 const clearBtn = document.getElementById('clearBtn');
